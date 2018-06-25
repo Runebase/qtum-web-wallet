@@ -1,19 +1,19 @@
-import qtum from 'qtumjs-lib'
+import runebase from 'runebasejs-lib'
 import bip39 from 'bip39'
 import ledger from 'libs/ledger'
 import server from 'libs/server'
 import config from 'libs/config'
 import buffer from 'buffer'
 
-const unit = 'QTUM'
+const unit = 'RUNEBASE'
 let network = {}
 switch (config.getNetwork())
 {
   case 'testnet':
-    network = qtum.networks.qtum_testnet
+    network = runebase.networks.runebase_testnet
     break
   case 'mainnet':
-    network = qtum.networks.qtum
+    network = runebase.networks.runebase
     break
 }
 
@@ -100,7 +100,7 @@ export default class Wallet {
   }
 
   static generateCreateContractTx(wallet, code, gasLimit, gasPrice, fee, utxoList) {
-    return qtum.utils.buildCreateContractTransaction(wallet.keyPair, code, gasLimit, gasPrice, fee, utxoList)
+    return runebase.utils.buildCreateContractTransaction(wallet.keyPair, code, gasLimit, gasPrice, fee, utxoList)
   }
 
   static async generateSendToContractTx(wallet, contractAddress, encodedData, gasLimit, gasPrice, fee, utxoList) {
@@ -109,7 +109,7 @@ export default class Wallet {
         return await ledger.generateSendToContractTx(wallet.keyPair, wallet.extend.ledger.ledger, wallet.extend.ledger.path, wallet.info.address, contractAddress, encodedData, gasLimit, gasPrice, fee, utxoList, server.currentNode().fetchRawTx)
       }
     }
-    return qtum.utils.buildSendToContractTransaction(wallet.keyPair, contractAddress, encodedData, gasLimit, gasPrice, fee, utxoList)
+    return runebase.utils.buildSendToContractTransaction(wallet.keyPair, contractAddress, encodedData, gasLimit, gasPrice, fee, utxoList)
   }
 
   static async generateTx(wallet, to, amount, fee, utxoList) {
@@ -118,7 +118,7 @@ export default class Wallet {
         return await ledger.generateTx(wallet.keyPair, wallet.extend.ledger.ledger, wallet.extend.ledger.path, wallet.info.address, to, amount, fee, utxoList, server.currentNode().fetchRawTx)
       }
     }
-    return qtum.utils.buildPubKeyHashTransaction(wallet.keyPair, to, amount, fee, utxoList)
+    return runebase.utils.buildPubKeyHashTransaction(wallet.keyPair, to, amount, fee, utxoList)
   }
 
   static async sendRawTx(tx) {
@@ -136,7 +136,7 @@ export default class Wallet {
   static restoreFromMnemonic(mnemonic, password) {
     //if (bip39.validateMnemonic(mnemonic) == false) return false
     const seedHex = bip39.mnemonicToSeedHex(mnemonic, password)
-    const hdNode = qtum.HDNode.fromSeedHex(seedHex, network)
+    const hdNode = runebase.HDNode.fromSeedHex(seedHex, network)
     const account = hdNode.deriveHardened(88).deriveHardened(0).deriveHardened(0)
     const keyPair = account.keyPair
     return new Wallet(keyPair)
@@ -144,7 +144,7 @@ export default class Wallet {
 
   static restoreFromMobile(mnemonic) {
     const seedHex = bip39.mnemonicToSeedHex(mnemonic)
-    const hdNode = qtum.HDNode.fromSeedHex(seedHex, network)
+    const hdNode = runebase.HDNode.fromSeedHex(seedHex, network)
     const account = hdNode.deriveHardened(88).deriveHardened(0)
     const walletList = []
     for (let i = 0; i < 10; i++) {
@@ -159,14 +159,14 @@ export default class Wallet {
   }
 
   static restoreFromWif(wif) {
-    return new Wallet(qtum.ECPair.fromWIF(wif, network))
+    return new Wallet(runebase.ECPair.fromWIF(wif, network))
   }
 
   static async restoreHdNodeFromLedgerPath(ledger, path) {
-    const res = await ledger.qtum.getWalletPublicKey(path)
-    const compressed = ledger.qtum.compressPublicKey(buffer.Buffer.from(res['publicKey'], 'hex'))
-    const keyPair = new qtum.ECPair.fromPublicKeyBuffer(compressed, network)
-    const hdNode = new qtum.HDNode(keyPair, buffer.Buffer.from(res['chainCode'], 'hex'))
+    const res = await ledger.runebase.getWalletPublicKey(path)
+    const compressed = ledger.runebase.compressPublicKey(buffer.Buffer.from(res['publicKey'], 'hex'))
+    const keyPair = new runebase.ECPair.fromPublicKeyBuffer(compressed, network)
+    const hdNode = new runebase.HDNode(keyPair, buffer.Buffer.from(res['chainCode'], 'hex'))
     hdNode.extend = {
       ledger: {
         ledger,
